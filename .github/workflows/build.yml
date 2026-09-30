@@ -1,0 +1,40 @@
+name: build-windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.2'
+          host: windows
+          target: desktop
+          arch: win64_mingw
+          modules: 'qtcharts'
+          tools: 'tools_mingw1310 tools_cmake tools_ninja'
+
+      - name: Configure and build
+        shell: bash
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Package with windeployqt
+        shell: bash
+        run: |
+          mkdir dist
+          cp build/CloudResourceManager.exe dist/
+          windeployqt dist/CloudResourceManager.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CloudResourceManager-windows
+          path: dist/
