@@ -14,25 +14,24 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.11.2'
+          version: '6.8.*'
           host: windows
           target: desktop
-          arch: win64_mingw
+          arch: win64_msvc2022_64
           modules: 'qtcharts'
-          tools: 'tools_mingw1310 tools_cmake tools_ninja'
 
-      - name: Configure and build
-        shell: bash
+      - name: Build
+        shell: pwsh
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-          cmake --build build
+          cmake -S . -B build
+          cmake --build build --config Release
 
-      - name: Package with windeployqt
-        shell: bash
+      - name: Package
+        shell: pwsh
         run: |
           mkdir dist
-          cp build/CloudResourceManager.exe dist/
-          windeployqt dist/CloudResourceManager.exe
+          Copy-Item build/Release/CloudResourceManager.exe dist/
+          windeployqt --release dist/CloudResourceManager.exe
 
       - uses: actions/upload-artifact@v4
         with:
